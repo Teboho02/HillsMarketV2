@@ -11,7 +11,7 @@ interface ListingFormPageProps {
 
 const ListingFormPage: React.FC<ListingFormPageProps> = ({ onCancel, onSubmit, productToEdit, currentUser }) => {
   const isEditing = !!productToEdit;
-  
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -19,6 +19,9 @@ const ListingFormPage: React.FC<ListingFormPageProps> = ({ onCancel, onSubmit, p
   const [condition, setCondition] = useState<ItemCondition>(CONDITIONS[0]);
   const [university, setUniversity] = useState(currentUser?.university || UNIVERSITIES[0]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     if (isEditing && productToEdit) {
@@ -32,10 +35,41 @@ const ListingFormPage: React.FC<ListingFormPageProps> = ({ onCancel, onSubmit, p
     }
   }, [isEditing, productToEdit]);
 
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!title.trim()) {
+      newErrors.title = 'Title is required';
+    } else if (title.trim().length < 3) {
+      newErrors.title = 'Title must be at least 3 characters';
+    }
+
+    if (!price) {
+      newErrors.price = 'Price is required';
+    } else if (Number(price) <= 0) {
+      newErrors.price = 'Price must be greater than 0';
+    }
+
+    if (!description.trim()) {
+      newErrors.description = 'Description is required';
+    } else if (description.trim().length < 10) {
+      newErrors.description = 'Description must be at least 10 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !price || !category || !university || !condition) return;
-    
+
+    // Mark all fields as touched
+    setTouched({ title: true, price: true, description: true });
+
+    if (!validateForm()) {
+      return;
+    }
+
     // In a real app, you'd handle file uploads properly.
     // Here we just use the preview or a placeholder.
     const imageUrls = [imagePreview || `https://picsum.photos/seed/${Math.random()}/600/400`];
@@ -49,6 +83,11 @@ const ListingFormPage: React.FC<ListingFormPageProps> = ({ onCancel, onSubmit, p
       university,
       imageUrls,
     }, isEditing ? productToEdit.id : null);
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched({ ...touched, [field]: true });
+    validateForm();
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,8 +111,21 @@ const ListingFormPage: React.FC<ListingFormPageProps> = ({ onCancel, onSubmit, p
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-slate-700">Title</label>
-              <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="mt-1 block w-full border-slate-300 rounded-lg shadow-sm focus:ring-brand-primary focus:border-brand-primary text-lg p-2.5 text-slate-900" required placeholder="e.g. Advanced Calculus Textbook" />
+              <label htmlFor="title" className="block text-sm font-medium text-slate-700">Title *</label>
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onBlur={() => handleBlur('title')}
+                className={`mt-1 block w-full rounded-lg shadow-sm text-lg p-2.5 text-slate-900 transition ${touched.title && errors.title ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 focus:ring-brand-primary focus:border-brand-primary'}`}
+                placeholder="e.g. Advanced Calculus Textbook"
+                aria-invalid={touched.title && errors.title ? 'true' : 'false'}
+                aria-describedby={touched.title && errors.title ? 'title-error' : undefined}
+              />
+              {touched.title && errors.title && (
+                <p id="title-error" className="mt-1 text-sm text-red-600">{errors.title}</p>
+              )}
             </div>
              <div>
               <label htmlFor="image" className="block text-sm font-medium text-slate-700">Image</label>
@@ -96,18 +148,44 @@ const ListingFormPage: React.FC<ListingFormPageProps> = ({ onCancel, onSubmit, p
               </div>
             </div>
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description</label>
-              <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="mt-1 block w-full border-slate-300 rounded-lg shadow-sm focus:ring-brand-primary focus:border-brand-primary p-2.5 text-slate-900" placeholder="Tell buyers about your item..."></textarea>
+              <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description *</label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={() => handleBlur('description')}
+                rows={4}
+                className={`mt-1 block w-full rounded-lg shadow-sm p-2.5 text-slate-900 transition ${touched.description && errors.description ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 focus:ring-brand-primary focus:border-brand-primary'}`}
+                placeholder="Tell buyers about your item..."
+                aria-invalid={touched.description && errors.description ? 'true' : 'false'}
+                aria-describedby={touched.description && errors.description ? 'description-error' : undefined}
+              ></textarea>
+              {touched.description && errors.description && (
+                <p id="description-error" className="mt-1 text-sm text-red-600">{errors.description}</p>
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label htmlFor="price" className="block text-sm font-medium text-slate-700">Price</label>
+                <label htmlFor="price" className="block text-sm font-medium text-slate-700">Price *</label>
                 <div className="mt-1 relative rounded-lg shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <span className="text-slate-500 sm:text-sm">R</span>
                   </div>
-                  <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} className="pl-7 block w-full border-slate-300 rounded-lg focus:ring-brand-primary focus:border-brand-primary p-2.5 text-slate-900" placeholder="0.00" required />
+                  <input
+                    type="number"
+                    id="price"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    onBlur={() => handleBlur('price')}
+                    className={`pl-7 block w-full rounded-lg p-2.5 text-slate-900 transition ${touched.price && errors.price ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 focus:ring-brand-primary focus:border-brand-primary'}`}
+                    placeholder="0.00"
+                    aria-invalid={touched.price && errors.price ? 'true' : 'false'}
+                    aria-describedby={touched.price && errors.price ? 'price-error' : undefined}
+                  />
                 </div>
+                {touched.price && errors.price && (
+                  <p id="price-error" className="mt-1 text-sm text-red-600">{errors.price}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-slate-700">Category</label>

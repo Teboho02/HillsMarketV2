@@ -20,6 +20,8 @@ export interface Product {
   imageUrls: string[];
   sellerId: number;
   university: string;
+  isSold?: boolean;
+  createdAt?: string;
 }
 
 export interface Message {

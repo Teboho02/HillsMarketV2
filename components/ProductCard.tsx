@@ -8,13 +8,19 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) => {
   return (
-    <button onClick={() => onSelect(product)} className="text-left w-full bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group border border-slate-200/80">
+    <button onClick={() => onSelect(product)} className={`text-left w-full bg-white rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group border border-slate-200/80 ${product.isSold ? 'opacity-75' : ''}`}>
       <div className="relative">
-        <img src={product.imageUrls[0]} alt={product.title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" />
+        <img src={product.imageUrls[0]} alt={product.title} className={`w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105 ${product.isSold ? 'grayscale' : ''}`} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent"></div>
-        <div className="absolute bottom-2 left-3 bg-brand-primary/90 backdrop-blur-sm text-white font-bold px-3 py-1 rounded-full text-sm shadow-md">
-          R{product.price}
-        </div>
+        {product.isSold ? (
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white font-bold px-6 py-3 rounded-lg text-lg shadow-xl rotate-[-15deg]">
+            SOLD
+          </div>
+        ) : (
+          <div className="absolute bottom-2 left-3 bg-brand-primary/90 backdrop-blur-sm text-white font-bold px-3 py-1 rounded-full text-sm shadow-md">
+            R{product.price}
+          </div>
+        )}
         <div className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm text-slate-700 font-medium px-2.5 py-1 rounded-full text-xs">
           {product.category}
         </div>

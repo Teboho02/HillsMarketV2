@@ -76,12 +76,15 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, seller, onBack, 
           {/* Product Info */}
           <div className="p-6 flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
                 <span className="text-sm font-semibold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full">{product.category}</span>
                 <span className="text-sm font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-full">{product.condition}</span>
+                {product.isSold && (
+                  <span className="text-sm font-semibold text-red-700 bg-red-100 px-2.5 py-1 rounded-full">SOLD</span>
+                )}
               </div>
               <h1 className="text-4xl font-display font-bold text-slate-800 break-words">{product.title}</h1>
-              <p className="text-4xl font-display font-extrabold text-brand-primary my-4">R{product.price}</p>
+              <p className={`text-4xl font-display font-extrabold my-4 ${product.isSold ? 'text-slate-400 line-through' : 'text-brand-primary'}`}>R{product.price}</p>
               <div className="text-slate-600 space-y-4 leading-relaxed">
                 <p className="break-words">{product.description}</p>
               </div>
@@ -99,27 +102,35 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ product, seller, onBack, 
                 </div>
               </div>
               <div className="mt-4 space-y-2">
-                <button
-                  onClick={onMessageSeller}
-                  className="w-full flex items-center justify-center space-x-2 bg-brand-secondary text-white px-6 py-3 rounded-lg hover:bg-amber-600 transition-all duration-300 font-semibold text-lg shadow hover:shadow-md transform hover:scale-105"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  <span>Message Seller</span>
-                </button>
-                {seller.phoneNumber && (
-                   <a
-                    href={`https://wa.me/${seller.phoneNumber.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center space-x-3 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 font-semibold text-lg shadow hover:shadow-md transform hover:scale-105"
-                  >
-                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.383 1.803 6.246l-.422 1.545 1.582-.41z"/>
-                     </svg>
-                    <span>Contact on WhatsApp</span>
-                  </a>
+                {product.isSold ? (
+                  <div className="w-full bg-slate-100 text-slate-600 px-6 py-3 rounded-lg text-center font-semibold text-lg border-2 border-slate-200">
+                    This item has been sold
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={onMessageSeller}
+                      className="w-full flex items-center justify-center space-x-2 bg-brand-secondary text-white px-6 py-3 rounded-lg hover:bg-amber-600 transition-all duration-300 font-semibold text-lg shadow hover:shadow-md transform hover:scale-105"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      <span>Message Seller</span>
+                    </button>
+                    {seller.phoneNumber && (
+                      <a
+                        href={`https://wa.me/${seller.phoneNumber.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full flex items-center justify-center space-x-3 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all duration-300 font-semibold text-lg shadow hover:shadow-md transform hover:scale-105"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.383 1.803 6.246l-.422 1.545 1.582-.41z"/>
+                        </svg>
+                        <span>Contact on WhatsApp</span>
+                      </a>
+                    )}
+                  </>
                 )}
               </div>
             </div>

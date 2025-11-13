@@ -3,7 +3,7 @@ import type { Product, User, View } from './types';
 import { MOCK_PRODUCTS, UNIVERSITIES, CATEGORIES, CURRENT_USER_ID, MOCK_USERS } from './constants';
 import Navbar from './components/Navbar';
 import ProductCard from './components/ProductCard';
-import FilterSidebar from './components/FilterSidebar';
+import FilterSidebar, { type SortOption } from './components/FilterSidebar';
 import Dashboard from './components/Dashboard';
 import ListingFormPage from './components/NewListingModal'; // Repurposed from NewListingModal
 import MessagesView from './components/MessagesView';
@@ -11,6 +11,7 @@ import LoginModal from './components/LoginModal';
 import ProductDetail from './components/ProductDetail';
 import LandingPage from './components/LandingPage';
 import SettingsPage from './components/SettingsPage';
+import { ToastContainer, type ToastType } from './components/Toast';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('landing');
@@ -27,21 +28,62 @@ const App: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [priceRange, setPriceRange] = useState<number>(2000);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+
+  const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: ToastType }>>([]);
+  const [toastIdCounter, setToastIdCounter] = useState(0);
+
+  const showToast = (message: string, type: ToastType) => {
+    const id = toastIdCounter;
+    setToastIdCounter(prev => prev + 1);
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  const handleResetFilters = () => {
+    setUniversityFilter('All');
+    setCategoryFilter('All');
+    setPriceRange(2000);
+    setSearchTerm('');
+    showToast('Filters reset successfully', 'info');
+  };
 
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
+    let filtered = products.filter(product => {
       const universityMatch = universityFilter === 'All' || product.university === universityFilter;
       const categoryMatch = categoryFilter === 'All' || product.category === categoryFilter;
       const priceMatch = product.price <= priceRange;
       const searchMatch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) || product.description.toLowerCase().includes(searchTerm.toLowerCase());
       return universityMatch && categoryMatch && priceMatch && searchMatch;
     });
-  }, [products, universityFilter, categoryFilter, priceRange, searchTerm]);
+
+    // Sort products
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        case 'oldest':
+          return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [products, universityFilter, categoryFilter, priceRange, searchTerm, sortBy]);
   
   const handleLogin = () => {
     const userToLogin = users.find(u => u.id === CURRENT_USER_ID)!;
     setCurrentUser(userToLogin);
     setShowLoginModal(false);
+    showToast(`Welcome back, ${userToLogin.name}!`, 'success');
     if (postLoginAction) {
       postLoginAction();
       setPostLoginAction(null);
@@ -53,11 +95,13 @@ const App: React.FC = () => {
     setView('browse');
     setSelectedProduct(null);
     setProductToEdit(null);
+    showToast('Logged out successfully', 'info');
   };
 
   const handleUpdateUser = (updatedUser: User) => {
     setUsers(prevUsers => prevUsers.map(user => user.id === updatedUser.id ? updatedUser : user));
     setCurrentUser(updatedUser);
+    showToast('Profile updated successfully', 'success');
   };
 
   const handleNavigate = (targetView: View) => {
@@ -78,11 +122,12 @@ const App: React.FC = () => {
 
     if (editingProductId) {
       // Update existing product
-      setProducts(prev => prev.map(p => 
-        p.id === editingProductId 
-          ? { ...p, ...productData, imageUrls: productData.imageUrls.length > 0 ? productData.imageUrls : p.imageUrls } 
+      setProducts(prev => prev.map(p =>
+        p.id === editingProductId
+          ? { ...p, ...productData, imageUrls: productData.imageUrls.length > 0 ? productData.imageUrls : p.imageUrls }
           : p
       ));
+      showToast('Listing updated successfully!', 'success');
     } else {
       // Create new product
       const newId = Math.max(...products.map(p => p.id)) + 1;
@@ -91,11 +136,14 @@ const App: React.FC = () => {
           ...productData,
           id: newId,
           sellerId: currentUser.id,
+          isSold: false,
+          createdAt: new Date().toISOString(),
         },
         ...prev
       ]);
+      showToast('Listing created successfully!', 'success');
     }
-    
+
     setView('dashboard');
     setProductToEdit(null);
   };
@@ -150,6 +198,9 @@ const App: React.FC = () => {
               setCategoryFilter={setCategoryFilter}
               priceRange={priceRange}
               setPriceRange={setPriceRange}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              onResetFilters={handleResetFilters}
             />
             <main className="flex-1">
               <h1 className="text-4xl font-display font-bold text-slate-800 mb-6">For Sale</h1>
@@ -176,17 +227,17 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
-      <Navbar 
+      <Navbar
         currentUser={currentUser}
         currentView={view}
-        onNavigate={handleNavigate} 
+        onNavigate={handleNavigate}
         onSellClick={() => handleNavigate('createListing')}
         onLoginClick={() => setShowLoginModal(true)}
         onLogoutClick={handleLogout}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
       />
-      
+
       <div key={view} className="animate-fade-in">
         {renderContent()}
       </div>
@@ -197,6 +248,8 @@ const App: React.FC = () => {
           onLogin={handleLogin}
         />
       )}
+
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };
