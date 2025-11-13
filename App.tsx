@@ -11,6 +11,7 @@ import LoginModal from './components/LoginModal';
 import ProductDetail from './components/ProductDetail';
 import LandingPage from './components/LandingPage';
 import SettingsPage from './components/SettingsPage';
+import AdminPage from './components/AdminPage';
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('landing');
@@ -65,9 +66,11 @@ const App: React.FC = () => {
       setSelectedProduct(null);
       setProductToEdit(null);
     }
-    if ((targetView === 'dashboard' || targetView === 'messages' || targetView === 'createListing' || targetView === 'settings') && !currentUser) {
+    if ((targetView === 'dashboard' || targetView === 'messages' || targetView === 'createListing' || targetView === 'settings' || targetView === 'admin') && !currentUser) {
       setPostLoginAction(() => () => setView(targetView));
       setShowLoginModal(true);
+    } else if (targetView === 'admin' && currentUser?.role !== 'admin') {
+      alert('You do not have permission to access the admin page');
     } else {
       setView(targetView);
     }
@@ -120,6 +123,8 @@ const App: React.FC = () => {
         return currentUser ? <MessagesView currentUser={currentUser} /> : null;
        case 'settings':
         return currentUser ? <SettingsPage currentUser={currentUser} onUpdateUser={handleUpdateUser} /> : null;
+      case 'admin':
+        return currentUser && currentUser.role === 'admin' ? <AdminPage currentUser={currentUser} onBack={() => handleNavigate('browse')} /> : null;
       case 'createListing':
         return <ListingFormPage onCancel={() => handleNavigate('browse')} onSubmit={handleSaveListing} currentUser={currentUser} />;
       case 'editListing':

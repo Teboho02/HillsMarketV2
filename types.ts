@@ -1,4 +1,4 @@
-export type View = 'landing' | 'browse' | 'dashboard' | 'messages' | 'productDetail' | 'createListing' | 'editListing' | 'settings';
+export type View = 'landing' | 'browse' | 'dashboard' | 'messages' | 'productDetail' | 'createListing' | 'editListing' | 'settings' | 'admin';
 
 export interface User {
   id: number;
@@ -6,6 +6,7 @@ export interface User {
   avatarUrl: string;
   university: string;
   phoneNumber?: string;
+  role?: 'user' | 'admin';
 }
 
 export type ItemCondition = 'New' | 'Like New' | 'Good' | 'Fair';

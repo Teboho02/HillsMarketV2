@@ -19,10 +19,10 @@ export const CATEGORIES: string[] = [
 export const CONDITIONS: ItemCondition[] = ['New', 'Like New', 'Good', 'Fair'];
 
 export const MOCK_USERS: User[] = [
-  { id: 1, name: "Alice Johnson", avatarUrl: "https://picsum.photos/seed/alice/100/100", university: "University of Cape Town", phoneNumber: "27821234567" },
-  { id: 2, name: "Bob Williams", avatarUrl: "https://picsum.photos/seed/bob/100/100", university: "Wits University", phoneNumber: "27831234567" },
-  { id: 3, name: "Charlie Brown", avatarUrl: "https://picsum.photos/seed/charlie/100/100", university: "Stellenbosch University" },
-  { id: 4, name: "Diana Prince", avatarUrl: "https://picsum.photos/seed/diana/100/100", university: "University of Pretoria", phoneNumber: "27841234567" },
+  { id: 1, name: "Alice Johnson", avatarUrl: "https://picsum.photos/seed/alice/100/100", university: "University of Cape Town", phoneNumber: "27821234567", role: "admin" },
+  { id: 2, name: "Bob Williams", avatarUrl: "https://picsum.photos/seed/bob/100/100", university: "Wits University", phoneNumber: "27831234567", role: "user" },
+  { id: 3, name: "Charlie Brown", avatarUrl: "https://picsum.photos/seed/charlie/100/100", university: "Stellenbosch University", role: "user" },
+  { id: 4, name: "Diana Prince", avatarUrl: "https://picsum.photos/seed/diana/100/100", university: "University of Pretoria", phoneNumber: "27841234567", role: "user" },
 ];
 
 export const CURRENT_USER_ID = 1; // Used for mock login

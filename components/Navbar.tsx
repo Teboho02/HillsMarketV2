@@ -76,6 +76,9 @@ const Navbar: React.FC<NavbarProps> = ({ currentUser, currentView, onNavigate, o
                       </div>
                       <a href="#" onMouseDown={(e) => { e.preventDefault(); onNavigate('dashboard'); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Dashboard</a>
                       <a href="#" onMouseDown={(e) => { e.preventDefault(); onNavigate('settings'); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">Settings</a>
+                      {currentUser.role === 'admin' && (
+                        <a href="#" onMouseDown={(e) => { e.preventDefault(); onNavigate('admin'); setIsMenuOpen(false); }} className="block px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 font-medium">Admin Panel</a>
+                      )}
                       <a href="#" onMouseDown={(e) => { e.preventDefault(); onLogoutClick(); setIsMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</a>
                     </div>
                 </div>
